@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements DataTransfer {
             float ratio = (float) width / height;
             gl.glMatrixMode(GL10.GL_PROJECTION);
             gl.glLoadIdentity();
-            gl.glFrustumf(-ratio, ratio, -1, 1,    1f, 1000);
+            gl.glFrustumf(-ratio, ratio, -1, 1,    1f, 2000);
             gl.glMatrixMode(GL10.GL_MODELVIEW);
             gl.glLoadIdentity();
         }
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements DataTransfer {
             //gl.glCullFace(GL10.GL_BACK);
             //gl.glPushMatrix();
 
-            gl.glTranslatef(0,0,-400);
+            gl.glTranslatef(0,0,-960);
             gl.glScalef(1f,1f,1f);
             //gl.glEnable(GL10.GL_DEPTH_TEST);
             //gl.glBlendFunc(GL10.GL_SRC_ALPHA,GL10.GL_ONE);
@@ -313,10 +313,10 @@ public class MainActivity extends AppCompatActivity implements DataTransfer {
             byteBuffer.order(ByteOrder.nativeOrder());
             vertices = byteBuffer.asFloatBuffer();
             //1 screen display position ,full screen .
-            vertices.put( new float[] {  -1920f,   -1080f,
-                    1920f,  -1080f,
-                    -1920f, 1080f,
-                    1920f,  1080f});
+            vertices.put( new float[] {  -1920f,   -1920f,
+                    1920f,  -1920f,
+                    -1920f, 1920f,
+                    1920f,  1920f});
 
 
             ByteBuffer indicesBuffer = ByteBuffer.allocateDirect(6 * 2);
