@@ -119,35 +119,52 @@ public class MainActivity extends AppCompatActivity implements DataTransfer {
         }
         public void onSurfaceChanged(GL10 gl, int width, int height) {
             // set view-port
+
             gl.glViewport(0, 0, width, height);
             // set projection matrix
             float ratio = (float) width / height;
             gl.glMatrixMode(GL10.GL_PROJECTION);
             gl.glLoadIdentity();
-            gl.glFrustumf(-ratio, ratio, -1, 1, 1, 10);
+            gl.glFrustumf(-ratio, ratio, -1, 1,    1f, 1000);
+            gl.glMatrixMode(GL10.GL_MODELVIEW);
+            gl.glLoadIdentity();
         }
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
             // dither is enabled by default, we don't need it
-            gl.glDisable(GL10.GL_DITHER);
+
+            //gl.glDisable(GL10.GL_DITHER);
             // clear screen in white
             gl.glClearColor(1,1,1,1);
+            gl.glShadeModel(GL10.GL_SMOOTH);
+            gl.glClearDepthf(1.0f);
+            gl.glEnable(GL10.GL_DEPTH_TEST);
+            gl.glDepthFunc(GL10.GL_LEQUAL);
+            gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT,GL10.GL_NICEST);
+            textureId = loadTexture("timg.jpg",gl);
+            //textureId = loadTexture("aaa.jpg",gl);
         }
 
         public void onDrawFrame(GL10 gl) {
-            //drawGrid(gl);
+            gl.glClearColor(0.0f,0.0f,0.0f,0.0f);
+            gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+            drawGrid(gl);
+            drawCube(gl);
+        }
 
-                // clear screen
-            gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+        private void drawCube(GL10 gl) {
+            // clear screen
+            //gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
             // set-up modelview matrix
-            gl.glMatrixMode(GL10.GL_MODELVIEW);
+            //gl.glMatrixMode(GL10.GL_MODELVIEW);
             gl.glLoadIdentity();
             gl.glTranslatef(3, 0, -6f);
             gl.glMultMatrixf(mRotationMatrixH, 0);
 
 
             // draw our object
+            //gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
             gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
             gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 
@@ -159,21 +176,29 @@ public class MainActivity extends AppCompatActivity implements DataTransfer {
             //gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
             //gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
             mCube2.draw(gl);
-
-
+            gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
         }
+
         public void drawGrid(GL10 gl) {
-            textureId = loadTexture("timg.jpg",gl);
+
             //定义显示在屏幕上的什么位置(opengl 自动转换)
-            gl.glViewport(0, 0, mGLSurfaceView.getWidth(), mGLSurfaceView.getHeight());
-            gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-            gl.glMatrixMode(GL10.GL_PROJECTION);
-            gl.glLoadIdentity();
-            gl.glOrthof(-160, 160, -240, 240, 1, -1);
+            //gl.glViewport(0, 0, mGLSurfaceView.getWidth(), mGLSurfaceView.getHeight());
+            //gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+            //gl.glMatrixMode(GL10.GL_PROJECTION);
+            //gl.glLoadIdentity();
+            //gl.glOrthof(-1920, 1920, -1080, 1080, 1, -1);
+            //gl.glCullFace(GL10.GL_BACK);
+            //gl.glPushMatrix();
+
+            gl.glTranslatef(0,0,-400);
+            gl.glScalef(1f,1f,1f);
+            //gl.glEnable(GL10.GL_DEPTH_TEST);
+            //gl.glBlendFunc(GL10.GL_SRC_ALPHA,GL10.GL_ONE);
 
             gl.glEnable(GL10.GL_TEXTURE_2D);
             //绑定纹理ID
             gl.glBindTexture(GL10.GL_TEXTURE_2D, textureId);
+
 
             gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
             gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
@@ -184,6 +209,16 @@ public class MainActivity extends AppCompatActivity implements DataTransfer {
             // gl.glRotatef(1, 0, 1, 0);
             gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 6,
                     GL10.GL_UNSIGNED_SHORT, indices);
+
+            gl.glBindTexture(GL10.GL_TEXTURE_2D, 0);
+            gl.glDisable(GL10.GL_TEXTURE_2D);
+            gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
+            gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+
+
+            //gl.glPopMatrix();
+            //gl.glDisable(GL10.GL_DEPTH_TEST);
+
         }
         class Cube {
             // initialize our cube
@@ -233,8 +268,8 @@ public class MainActivity extends AppCompatActivity implements DataTransfer {
             }
 
             public void draw(GL10 gl) {
-                gl.glEnable(GL10.GL_CULL_FACE);
-                gl.glFrontFace(GL10.GL_CW);
+                //gl.glEnable(GL10.GL_CULL_FACE);
+                //gl.glFrontFace(GL10.GL_CW);
                 gl.glShadeModel(GL10.GL_SMOOTH);
                 gl.glVertexPointer(3, GL10.GL_FLOAT, 0, mVertexBuffer);
                 gl.glColorPointer(4, GL10.GL_FLOAT, 0, mColorBuffer);
@@ -247,9 +282,12 @@ public class MainActivity extends AppCompatActivity implements DataTransfer {
                 Bitmap bitmap = BitmapFactory.decodeStream(getAssets().open(
                         fileName));
                 int textureIds[] = new int[1];
+                //1 create texture.
                 gl.glGenTextures(1, textureIds, 0);
-                int textureId = textureIds[0];
+                textureId = textureIds[0];
+                //2 bind texture
                 gl.glBindTexture(GL10.GL_TEXTURE_2D, textureId);
+                //3 dump bitmap to texutre object relative memory, then you can use it sometime you want .
                 GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
                 gl.glTexParameterf(GL10.GL_TEXTURE_2D,
                         GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
@@ -268,28 +306,28 @@ public class MainActivity extends AppCompatActivity implements DataTransfer {
         FloatBuffer vertices;
         FloatBuffer texture;
         ShortBuffer indices;
-        int textureId;
+        int textureId = -1;
         public void textureInit() {
 
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * 2 * 4);
             byteBuffer.order(ByteOrder.nativeOrder());
             vertices = byteBuffer.asFloatBuffer();
-//            vertices.put( new float[] {  -80f,   -120f,0,1f,
-//                                         80f,  -120f, 1f,1f,
-//                                         -80f, 120f, 0f,0f,
-//                                         80f,120f,   1f,0f});
-            vertices.put( new float[] {  -80f,   -120f,
-                    80f,  -120f,
-                    -80f, 120f,
-                    80f,  120f});
+            //1 screen display position ,full screen .
+            vertices.put( new float[] {  -1920f,   -1080f,
+                    1920f,  -1080f,
+                    -1920f, 1080f,
+                    1920f,  1080f});
+
 
             ByteBuffer indicesBuffer = ByteBuffer.allocateDirect(6 * 2);
             indicesBuffer.order(ByteOrder.nativeOrder());
             indices = indicesBuffer.asShortBuffer();
+            //2 indices
             indices.put(new short[] { 0, 1, 2,1,2,3});
 
             ByteBuffer textureBuffer = ByteBuffer.allocateDirect(4 * 2 * 4);
             textureBuffer.order(ByteOrder.nativeOrder());
+            //3 texture
             texture = textureBuffer.asFloatBuffer();
             texture.put( new float[] { 0,1f,
                     1f,1f,
